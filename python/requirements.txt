@@ -1,0 +1,5 @@
+# Add CV and utility dependencies here
+# Example:
+# mediapipe==1.12.0
+# opencv-python==4.7.0
+# numpy
