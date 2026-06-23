@@ -1,0 +1,78 @@
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/contents.xcuserstate
+*.xcworkspace
+*.xcdebugger
+*.xcodeproj/project.xcworkspace/
+*.moved-aside
+*.xcassets/Generated.xcassets
+*.ipa
+*.dSYM
+
+# CocoaPods/Carthage/SwiftPM
+Pods/
+Carthage/Build/
+.swiftpm/
+.build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/*.png
+fastlane/test_output/
+
+# Xcode Server
+xcshareddata/WorkspaceSettings.xcsettings
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Distribution / packaging
+pip-wheel-metadata/
+*.egg-info/
+dist/
+build/
+
+# Pipenv / Poetry
+Pipfile.lock
+.poetry/
+
+# pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# Test videos: keep placeholder in repo, but ignore large files unless using git-lfs
+test_videos/*.mp4
+test_videos/*.mov
+test_videos/*.mkv
+test_videos/.gitkeep
