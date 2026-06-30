@@ -7,10 +7,15 @@ from spinepose import SpinePoseEstimator
 # ------------------ CONFIG ------------------
 
 VIDEO_PATH  = r"C:\Users\conor\Downloads\Squat1.mp4"
-OUTPUT_PATH = "output_combined.mp4"
-PROCESS_EVERY_N_FRAMES = 2        # skip every other frame for speed
-SPINE_INDICES          = list(range(17, 26))
+OUTPUT_PATH = "output_combined_2.mp4"
+PROCESS_EVERY_N_FRAMES = 2
 CONFIDENCE_THRESHOLD   = 0.3
+
+# Positions within SPINE_IDS list (set after estimator init)
+# [0]=hip  [1]=spine_01  [2]=spine_02  [3]=spine_03  [4]=spine_04
+# [5]=spine_05  [6]=neck  [7]=neck_02  [8]=neck_03
+LUMBAR_TOP_POS = 3   # spine_03 — endpoint for lumbar lean
+TRUNK_TOP_POS  = 5   # spine_05 — endpoint for trunk lean (excludes neck)
 
 # ------------------ FUNCTIONS ------------------
 
@@ -24,20 +29,35 @@ def calculate_angle(a, b, c):
     return float(np.degrees(np.arccos(cosine)))
 
 
-def compute_spine_curvature(spine_points):
-    valid = [p for p in spine_points if p is not None]
-    if len(valid) < 3:
-        return [], None
-    segment_angles = []
-    for i in range(len(valid) - 1):
-        delta = np.array(valid[i + 1]) - np.array(valid[i])
-        angle = np.degrees(np.arctan2(abs(delta[0]), abs(delta[1])))
-        segment_angles.append(float(angle))
-    top    = np.array(valid[0])
-    bottom = np.array(valid[-1])
-    diff   = bottom - top
-    overall_lean = float(np.degrees(np.arctan2(abs(diff[0]), abs(diff[1]))))
-    return segment_angles, overall_lean
+def angle_from_vertical(pt_bottom, pt_top):
+    """Angle in degrees between the vector pt_bottom→pt_top and the vertical axis.
+    pt_bottom is anatomically lower (higher y in image coords)."""
+    diff = np.array(pt_top) - np.array(pt_bottom)
+    return float(np.degrees(np.arctan2(abs(diff[0]), abs(diff[1]))))
+
+
+def draw_spine_chain(frame, keypoints, scores, spine_ids, threshold):
+    """Draw only the spine keypoints and chain — suppresses face/limb keypoints."""
+    if len(keypoints) == 0:
+        return frame, [None] * len(spine_ids)
+
+    person_kps    = keypoints[0]
+    person_scores = scores[0]
+
+    pts = []
+    for idx in spine_ids:
+        if person_scores[idx] > threshold:
+            x, y = int(person_kps[idx][0]), int(person_kps[idx][1])
+            pts.append((x, y))
+            cv2.circle(frame, (x, y), 5, (255, 105, 180), -1)   # pink dot
+        else:
+            pts.append(None)
+
+    for i in range(len(pts) - 1):
+        if pts[i] is not None and pts[i + 1] is not None:
+            cv2.line(frame, pts[i], pts[i + 1], (51, 153, 255), 2)  # blue line
+
+    return frame, pts
 
 
 def get_landmark_coords(landmarks, index, w, h):
@@ -46,7 +66,6 @@ def get_landmark_coords(landmarks, index, w, h):
 
 
 def draw_text_bg(frame, text, pos, font_scale=0.6, color=(255, 255, 255), thickness=2):
-    """Draw text with a dark background rectangle for readability in busy frames."""
     font = cv2.FONT_HERSHEY_SIMPLEX
     (tw, th), _ = cv2.getTextSize(text, font, font_scale, thickness)
     x, y = pos
@@ -55,15 +74,17 @@ def draw_text_bg(frame, text, pos, font_scale=0.6, color=(255, 255, 255), thickn
 
 
 def save_angle_chart(frame_data):
-    frames      = [d["frame"]      for d in frame_data]
-    knee_angles = [d["knee_angle"] for d in frame_data]
-    hip_angles  = [d["hip_angle"]  for d in frame_data]
-    trunk_leans = [d["trunk_lean"] for d in frame_data]
+    frames        = [d["frame"]        for d in frame_data]
+    knee_angles   = [d["knee_angle"]   for d in frame_data]
+    hip_angles    = [d["hip_angle"]    for d in frame_data]
+    trunk_leans   = [d["trunk_lean"]   for d in frame_data]
+    lumbar_leans  = [d["lumbar_lean"]  for d in frame_data]
 
     plt.figure(figsize=(14, 6))
-    plt.plot(frames, knee_angles, label="Knee angle", color="green")
-    plt.plot(frames, hip_angles,  label="Hip angle",  color="gold")
-    plt.plot(frames, trunk_leans, label="Trunk lean", color="orange")
+    plt.plot(frames, knee_angles,  label="Knee angle",  color="green")
+    plt.plot(frames, hip_angles,   label="Hip angle",   color="gold")
+    plt.plot(frames, trunk_leans,  label="Trunk lean",  color="orange")
+    plt.plot(frames, lumbar_leans, label="Lumbar lean", color="red", linestyle="--")
     plt.xlabel("Frame")
     plt.ylabel("Degrees")
     plt.title("Joint angles across lift")
@@ -81,7 +102,8 @@ print("Loading models...")
 
 # 'small' is meaningfully faster than 'medium' with acceptable accuracy loss
 # swap back to 'medium' when validating final output quality
-estimator = SpinePoseEstimator(mode="small")
+estimator     = SpinePoseEstimator(mode="small")
+SPINE_INDICES = estimator.SPINE_IDS  # [hip, spine_01..05, neck, neck_02, neck_03]
 
 mp_pose = mp.solutions.pose
 mp_draw = mp.solutions.drawing_utils
@@ -100,17 +122,18 @@ total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 out = cv2.VideoWriter(
     OUTPUT_PATH,
     cv2.VideoWriter_fourcc(*'mp4v'),
-    fps / PROCESS_EVERY_N_FRAMES,  # output fps matches skipped input fps
+    fps / PROCESS_EVERY_N_FRAMES,
     (w, h)
 )
 
-frame_data  = []
-frame_index = 0
+frame_data   = []
+frame_index  = 0
 
-# Cache last known values so output is always populated even on skipped frames
-last_knee = None
-last_hip  = None
-last_lean = None
+# Cache last known values so skipped frames always have data
+last_knee   = None
+last_hip    = None
+last_trunk  = None
+last_lumbar = None
 
 print(f"Processing {total_frames} frames (analysing every {PROCESS_EVERY_N_FRAMES})...")
 
@@ -123,11 +146,9 @@ while True:
 
     frame_index += 1
 
-    # Skip frames for speed — only run models every Nth frame
     if frame_index % PROCESS_EVERY_N_FRAMES != 0:
         continue
 
-    # Progress print every 100 processed frames
     processed = frame_index // PROCESS_EVERY_N_FRAMES
     if processed % 100 == 0:
         pct = (frame_index / total_frames) * 100
@@ -162,42 +183,39 @@ while True:
     # -------- SpinePose — called ONCE per frame --------
     keypoints, scores = estimator(frame)
 
-    spine_points = []
-    overall_lean = last_lean
+    trunk_lean  = last_trunk
+    lumbar_lean = last_lumbar
 
     if len(keypoints) > 0:
-        person_kps    = keypoints[0]
-        person_scores = scores[0]
-
-        for idx in SPINE_INDICES:
-            if person_scores[idx] > CONFIDENCE_THRESHOLD:
-                x, y = int(person_kps[idx][0]), int(person_kps[idx][1])
-                spine_points.append((x, y))
-            else:
-                spine_points.append(None)
-
-        _, computed_lean = compute_spine_curvature(spine_points)
-        if computed_lean is not None:
-            overall_lean = computed_lean
-            last_lean    = overall_lean
-
-        # Draw SpinePose skeleton on frame
-        frame = estimator.visualize(frame, keypoints, scores)
-
-    if overall_lean is not None:
-        draw_text_bg(
-            frame,
-            f"Trunk lean: {overall_lean:.1f} deg",
-            (20, 80),
-            color=(0, 165, 255)
+        frame, spine_pts = draw_spine_chain(
+            frame, keypoints, scores, SPINE_INDICES, CONFIDENCE_THRESHOLD
         )
+
+        hip_pt    = spine_pts[0]
+        lumbar_pt = spine_pts[LUMBAR_TOP_POS]   # spine_03
+        trunk_pt  = spine_pts[TRUNK_TOP_POS]    # spine_05
+
+        if hip_pt is not None and trunk_pt is not None:
+            trunk_lean = angle_from_vertical(hip_pt, trunk_pt)
+            last_trunk = trunk_lean
+
+        if hip_pt is not None and lumbar_pt is not None:
+            lumbar_lean = angle_from_vertical(hip_pt, lumbar_pt)
+            last_lumbar = lumbar_lean
+
+    y_offset = 40
+    if trunk_lean is not None:
+        draw_text_bg(frame, f"Trunk lean:  {trunk_lean:.1f} deg",  (20, y_offset),      color=(0, 165, 255))
+    if lumbar_lean is not None:
+        draw_text_bg(frame, f"Lumbar lean: {lumbar_lean:.1f} deg", (20, y_offset + 30), color=(0, 100, 255))
 
     # -------- Store per-frame data for chart --------
     frame_data.append({
-        "frame":      frame_index,
-        "knee_angle": knee_angle,
-        "hip_angle":  hip_angle,
-        "trunk_lean": overall_lean,
+        "frame":       frame_index,
+        "knee_angle":  knee_angle,
+        "hip_angle":   hip_angle,
+        "trunk_lean":  trunk_lean,
+        "lumbar_lean": lumbar_lean,
     })
 
     out.write(frame)
