@@ -1,21 +1,10 @@
-# Minimal prototype entrypoint for TUS Rise
-# Replace with your computer vision implementation (MediaPipe/OpenCV/PyTorch)
+import cv2
+from spinepose import SpinePoseEstimator
 
-def compute_spine_angles_stub():
-    # Example: this function will eventually accept keypoints and compute spinal angle metrics
-    # Return a dictionary of example metrics for now
-    return {
-        "lumbar_angle_deg": 5.0,
-        "thoracic_angle_deg": -3.0,
-        "hip_angle_deg": 30.0,
-        "notes": "stub output — replace with real CV computation"
-    }
+estimator = SpinePoseEstimator()
 
-
-def main():
-    metrics = compute_spine_angles_stub()
-    print("TUS Rise prototype metrics:", metrics)
-
-
-if __name__ == '__main__':
-    main()
+#interface on a image
+image = cv2.imread(r"C:\Users\conor\Downloads\me2.png")
+keypoints, scores = estimator(image)
+visualized = estimator.visualize (image, keypoints, scores)
+cv2.imwrite('output4.jpg', visualized)
