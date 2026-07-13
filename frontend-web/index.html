@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>LiftIQ — Biomechanical Lift Analyser</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Desktop-only device frame. On a real phone the app runs full-bleed. -->
+<div class="device-stage">
+  <div class="device" id="device">
+    <div class="dynamic-island"></div>
+
+    <div class="app" id="app">
+
+      <!-- ============ SPLASH ============ -->
+      <div class="splash" id="splash">
+        <div class="splash-orb orb-1"></div>
+        <div class="splash-orb orb-2"></div>
+        <div class="splash-logo">
+          <svg viewBox="0 0 64 64" class="splash-mark">
+            <defs>
+              <linearGradient id="lgSplash" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#67e8f9"/>
+                <stop offset="1" stop-color="#0ea5e9"/>
+              </linearGradient>
+            </defs>
+            <!-- barbell + pulse mark -->
+            <rect x="6"  y="26" width="8" height="12" rx="3" fill="url(#lgSplash)"/>
+            <rect x="50" y="26" width="8" height="12" rx="3" fill="url(#lgSplash)"/>
+            <path d="M14 32 h10 l4 -10 l6 20 l4 -14 l3 4 h9"
+                  fill="none" stroke="url(#lgSplash)" stroke-width="4"
+                  stroke-linecap="round" stroke-linejoin="round" class="pulse-path"/>
+          </svg>
+          <h1 class="splash-title">Lift<span>IQ</span></h1>
+          <p class="splash-sub">Biomechanical lift analysis</p>
+        </div>
+        <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+      </div>
+
+      <!-- ============ MAIN SHELL ============ -->
+      <div class="shell hidden" id="shell">
+        <main class="screen-host" id="screen-host"></main>
+
+        <nav class="tabbar glass" id="tabbar">
+          <button class="tab active" data-tab="home" aria-label="Home">
+            <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v9h4.7v-5.4h3.6V19h4.7v-9"
+              fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Home</span>
+          </button>
+          <button class="tab" data-tab="history" aria-label="History">
+            <svg viewBox="0 0 24 24"><path d="M12 8v4l3 2M21 12a9 9 0 1 1-2.6-6.3M21 4v4h-4"
+              fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>History</span>
+          </button>
+          <button class="tab tab-cta" data-tab="analyze" aria-label="Analyze">
+            <span class="cta-circle">
+              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor"
+                stroke-width="2.2" stroke-linecap="round"/></svg>
+            </span>
+            <span>Analyze</span>
+          </button>
+          <button class="tab" data-tab="trends" aria-label="Trends">
+            <svg viewBox="0 0 24 24"><path d="M4 19 10 12l4 3 6-8M20 7h-5m5 0v5"
+              fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Trends</span>
+          </button>
+          <button class="tab" data-tab="settings" aria-label="Settings">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.3-1-2 3.5 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.5 2.3-1a7 7 0 0 0 2 1.2l.4 2.6h4l.4-2.6a7 7 0 0 0 2-1.2l2.3 1 2-3.5-2-1.5c.06-.4.1-.8.1-1.2Z"
+              fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <span>Settings</span>
+          </button>
+        </nav>
+
+        <div class="home-indicator"></div>
+      </div>
+
+      <!-- Detail overlay (slides over the shell) -->
+      <div class="detail-overlay hidden" id="detail-overlay"></div>
+
+      <!-- Toast -->
+      <div class="toast hidden" id="toast"></div>
+
+      <!-- Hidden file input for importing real session JSON -->
+      <input type="file" id="file-input" accept=".json" hidden>
+    </div>
+  </div>
+  <p class="stage-caption">LiftIQ prototype — 393 × 852 (iPhone 14 Pro / 15 / 16 class). Open on a phone for full-bleed.</p>
+</div>
+
+<script src="data.js"></script>
+<script src="charts.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

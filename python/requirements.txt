@@ -1,5 +1,19 @@
-# Add CV and utility dependencies here
-# Example:
-# mediapipe==1.12.0
-# opencv-python==4.7.0
-# numpy
+# LiftIQ analysis pipeline — Python 3.12 (versions pinned from the working venv, 2026-07-06)
+
+# Core pipeline
+mediapipe==0.10.14
+opencv-python==4.13.0.92
+opencv-contrib-python==4.13.0.92
+numpy==2.5.0
+matplotlib==3.11.0
+
+# Spine keypoints (dfki-av/spinepose, ONNX models)
+spinepose==2.1.0
+onnxruntime==1.27.0
+onnx==1.22.0
+
+# Keypoint smoothing (1€ filter)
+OneEuroFilter==0.2.1
+
+# Depth Anything V2 prototype (see .claude/skills/depth-3d-spine)
+torch==2.12.1
