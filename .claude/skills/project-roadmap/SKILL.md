@@ -5,13 +5,15 @@ description: Master roadmap and state of the LiftIQ biomechanical squat/deadlift
 
 # LiftIQ Project Roadmap
 
-Real-time biomechanical squat/deadlift analyser. Python prototype on Windows (PyCharm) → eventual iOS app. TUS Athlone funded research internship. User: Conor, Python-competent student, no Mac access yet.
+Real-time biomechanical squat/deadlift analyser. Python prototype (developed on Windows/PyCharm) → iOS app. TUS Athlone funded research internship. User: Conor, Python-competent student. **Mac access arrived 2026-07-13** — iOS work is unblocked.
+
+Repo: https://github.com/conormc050/TUS-RISE (layout is authoritative — do not reorganise it). The analysis pipeline lives at `python/VidCalc.py`; wherever these skills say `VidCalc.py`, that's the file. Sample session JSON for frontend testing: `OutPuts/session_Squat3.json`. Note: the mp4s in the repo are committed as plain git blobs despite `.gitattributes` marking them for LFS — they show as perpetually "modified" in `git status`; never stage them, it's a known pre-existing quirk.
 
 ## Architecture (current)
 
 ```
 gym video (mp4)
-   └─> VidCalc.py
+   └─> python/VidCalc.py
          ├─ MediaPipe BlazePose ─ body keypoints → knee/hip angles
          ├─ SpinePose (dfki-av, ONNX, 37 kpts) ─ estimator.SPINE_IDS → 9 spinal keypoints
          ├─ rep state machine (knee-angle hysteresis 120°/125°)
@@ -20,7 +22,7 @@ gym video (mp4)
          └─ outputs: annotated mp4, angle_chart.png, rep_summary.png,
                      session_<video>.json (schema_version 1)
                           └─> frontend-web/ (LiftIQ HTML/CSS/JS, iPhone frame mock)
-                          └─> frontend-ios/LiftIQ/ (SwiftUI mirror, untested — no Mac)
+                          └─> frontend-ios/LiftIQ/ (SwiftUI mirror, written blind pre-Mac — needs first Xcode build)
 ```
 
 ## Done
