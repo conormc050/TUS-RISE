@@ -135,17 +135,6 @@ final class SessionStore: ObservableObject {
         sessions.insert(session, at: 0)
     }
 
-    @discardableResult
-    func importSession(from url: URL) throws -> LiftSession {
-        let needsAccess = url.startAccessingSecurityScopedResource()
-        defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
-        let data = try Data(contentsOf: url)
-        let payload = try JSONDecoder().decode(SessionPayload.self, from: data)
-        let session = LiftSession(payload: payload)
-        sessions.insert(session, at: 0)
-        return session
-    }
-
     // Aggregates ---------------------------------------------------
 
     struct WeekStats { let sessions: Int; let reps: Int; let avgScore: Int? }

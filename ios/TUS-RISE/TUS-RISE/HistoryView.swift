@@ -64,7 +64,7 @@ struct HistoryView: View {
                                     .font(.system(size: 40)).foregroundStyle(.tertiary)
                                 Text("No sessions here")
                                     .font(.headline)
-                                Text("Run VidCalc.py on a video and import\nthe session JSON from the Analyze tab.")
+                                Text("No sessions yet — analyse a video\nfrom the Analyze tab to get started.")
                                     .font(.subheadline).foregroundStyle(.secondary)
                                     .multilineTextAlignment(.center)
                             }

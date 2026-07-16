@@ -64,7 +64,7 @@ struct HomeView: View {
 
                         if store.sorted.isEmpty {
                             GlassCard(label: "Get started") {
-                                Text("No sessions yet — analyse a video or import a session JSON from the Analyze tab.")
+                                Text("No sessions yet — analyse a video from the Analyze tab to get started.")
                                     .font(.system(size: 13.5))
                                     .foregroundStyle(.secondary)
                             }
