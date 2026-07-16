@@ -69,8 +69,19 @@ Lift the 2D spine keypoints into 3D using depth. Three paths, in order of when t
 - [ ] **Replace the provisional form score** — the 0–100 heuristic in the frontend was explicitly marked placeholder; either validate it or present raw flags only
 - [ ] **Document coordinate conventions and units** in one place (see session-schema skill) — 3D will multiply the confusion otherwise
 
-### iOS (when Mac access arrives)
+### iOS (started 2026-07-13)
 See [ios-port](../ios-port/SKILL.md): framework choice matrix, SpinePose-on-iOS options (ONNX Runtime vs CoreML), capture pipeline.
+
+The Xcode project lives at `ios/TUS-RISE/` and is named **TUS-RISE** (Conor's explicit choice — do not rename to LiftIQ; UI branding is TUS-RISE, AppStorage keys are `tusrise.*`).
+
+- [x] Xcode project created; 9 SwiftUI files ported from `frontend-ios/LiftIQ/`, rebranded TUS-RISE, builds and runs in simulator (2026-07-13; only fix: `import Combine` in Models.swift)
+- [ ] Smoke-test session JSON import: run in simulator, Analyze tab → import `OutPuts/session_Squat3.json`, confirm charts render (mechanism already built, just needs the manual test)
+- [ ] Vision 3D pose on imported mp4 → knee/hip angles; validate vs VidCalc.py on the same clip (trends + rep counts must match; raw angles ±3°). **Found 2026-07-14:** `VNDetectHumanBodyPose3DRequest` throws in the simulator (device/macOS only) — `VideoPoseAnalyzer` auto-falls back to 2D `VNDetectHumanBodyPoseRequest` (pixel-space angles, closest match to VidCalc's 2D math). Videos are picked from Photos (drag onto simulator → Photos), not Files. Testing the 3D path needs the app on Conor's iPhone 15 (free Apple ID + Developer Mode).
+- [x] Port rules engine + rep state machine (2026-07-14): `RulesEngine.swift` mirrors VidCalc's CONFIG/state machine/compute_rep_stats; verified on Squat1.mp4 (3 reps, sane depths/durations). Deviations documented in the file header: lumbar baseline + lumbar flag dormant until SpinePose; trunk baseline locks independently; no One Euro smoothing yet. Note: Squat1.mp4 has only ~2 s of standing intro — calibration (40 processed frames ≈ 2.7 s) does NOT lock on it, same as Python would; test clips need a longer standing start.
+- [ ] Validate Swift angles/reps vs VidCalc.py on the same clip (needs a VidCalc run on Conor's Windows machine → compare angle_chart.png + rep table)
+- [ ] Portrait decode fix (2026-07-14): AVAssetReaderVideoCompositionOutput bakes preferredTransform in — verified with a fabricated portrait file. Needs re-confirmation on-device with a phone-recorded portrait video.
+- [ ] SpinePose via ONNX Runtime; depth lifting (unlocks lumbar baseline, lumbar flag, and true `calibrated: true`)
+- [ ] Live camera mode
 
 ### Performance
 See [performance-optimization](../performance-optimization/SKILL.md) before optimizing anything: profiling method, ROI cropping (biggest untapped Python win), iOS ANE/thermal/battery, LiDAR-path costs, and acceptance targets.

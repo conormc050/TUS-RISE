@@ -16,13 +16,13 @@ Real-time biomechanical squat/deadlift analyser. TUS Athlone funded research int
 
 Known quirk: the mp4s are committed as plain git blobs despite `.gitattributes` marking them for LFS — they may show as perpetually "modified" in `git status`. Never stage or "fix" them.
 
-## Current status (2026-07-13)
+## Current status (2026-07-14)
 
-Mac access just arrived. iOS port is starting, following the port order in the ios-port skill:
+Mac access arrived 2026-07-13. The Xcode project exists at `ios/TUS-RISE/` and is named **TUS-RISE** (Conor's explicit choice — do not rename to LiftIQ; UI branding is TUS-RISE too). The 9 SwiftUI files were ported in from `frontend-ios/LiftIQ/`, rebranded, and the app builds and runs in the simulator. Port order from the ios-port skill:
 
-1. **← WE ARE HERE.** Create the Xcode project: iOS → App, name **LiftIQ**, SwiftUI, Storage None, save into `ios/`. Delete the generated `ContentView.swift`/`LiftIQApp.swift`, drag in the 9 files from `frontend-ios/LiftIQ/` ("Copy items if needed"), then Cmd+B and fix compile errors until it builds and runs in the simulator.
-2. Session JSON import — load `OutPuts/session_Squat3.json` into the app.
-3. Vision 3D body pose (`VNDetectHumanBodyPose3DRequest`) on imported video; validate knee/hip angles vs `python/VidCalc.py` on the same clip (match trends and rep counts; raw angles ±3°).
+1. [x] Create the Xcode project, port the 9 SwiftUI files, build clean (done 2026-07-13; only fix needed was `import Combine` in Models.swift).
+2. [ ] Smoke-test session JSON import — run in simulator, import `OutPuts/session_Squat3.json` via the Analyze tab, confirm charts render.
+3. **← WE ARE HERE.** Vision 3D body pose on imported video; validate knee/hip angles vs `python/VidCalc.py` on the same clip (match trends and rep counts; raw angles ±3°).
 4. Port rules engine + rep state machine (pure logic; constants in one struct mirroring VidCalc's CONFIG).
 5. SpinePose via ONNX Runtime iOS; depth lifting after.
 6. Live camera mode last.
