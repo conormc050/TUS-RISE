@@ -9,12 +9,12 @@ Real-time biomechanical squat/deadlift analyser. TUS Athlone funded research int
 - `python/VidCalc.py` — the whole analysis pipeline (MediaPipe BlazePose + SpinePose ONNX, rep state machine, calibration, rules engine, session JSON export)
 - `python/requirements.txt`, `python/SpineKpValidation.py`
 - `frontend-web/` — LiftIQ web prototype (open `index.html`)
-- `frontend-ios/LiftIQ/` — 9 SwiftUI source files, written blind pre-Mac, never compiled. **No `.xcodeproj` exists yet.**
-- `ios/` — destination for the real Xcode project when it's created
+- `frontend-ios/LiftIQ/` — the original 9 SwiftUI files written blind pre-Mac; superseded by the ported app in `ios/TUS-RISE/`, kept for reference
+- `ios/TUS-RISE/` — the real Xcode project (app name **TUS-RISE**)
 - `OutPuts/session_Squat3.json` — sample session export (schema_version 1); the iOS app's first test fixture
-- `docs/`, `test_videos/`, plus legacy output images/videos at root
+- `docs/`, `test_videos/`
 
-Known quirk: the mp4s are committed as plain git blobs despite `.gitattributes` marking them for LFS — they may show as perpetually "modified" in `git status`. Never stage or "fix" them.
+Video files are plain git blobs — LFS is not used (its `.gitattributes` rules were removed 2026-07-21 after they broke checkout on Macs without git-lfs).
 
 ## Current status (2026-07-14)
 
